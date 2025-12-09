@@ -34,7 +34,7 @@ async def keep_alive():
     async with httpx.AsyncClient() as client:
         while True:
             try:
-                await asyncio.sleep(600)  # Ping every 10 minutes
+                await asyncio.sleep(120)  # Ping every 2 minutes
                 logger.info(f"Sending keep-alive ping to {url}")
                 response = await client.get(url)
                 logger.info(f"Keep-alive ping status: {response.status_code}")
