@@ -1,4 +1,4 @@
-#!/mnt/c/Users/HP/Desktop/sachin/github/github/embedding-service-vercel/.venv/bin/python3
+#!/mnt/c/Users/HP/Desktop/sachin/github/github/embedding-service-vercel/.venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
