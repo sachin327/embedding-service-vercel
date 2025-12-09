@@ -4,3 +4,4 @@ python-dotenv
 fastembed
 pydantic
 sentence-transformers
+httpx
