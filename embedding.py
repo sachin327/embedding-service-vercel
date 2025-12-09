@@ -83,6 +83,3 @@ class Embedding:
         """Get the embedding dimension."""
         # Embed a dummy text to get the dimension
         return len(self.embed(["test"])[0])
-
-
-embedding = Embedding()
