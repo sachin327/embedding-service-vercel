@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
@@ -30,7 +31,7 @@ class EmbeddingRequest(BaseModel):
 
 async def keep_alive():
     """Periodically pings the server to keep it active."""
-    url = "https://embedding-service-vercel.onrender.com/ping"  # Adjust URL if deployed elsewhere
+    url = f"{os.getenv('SELF_API_URL')}/ping"  # Adjust URL if deployed elsewhere
     async with httpx.AsyncClient() as client:
         while True:
             try:
