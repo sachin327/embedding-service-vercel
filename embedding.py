@@ -72,12 +72,25 @@ class Embedding:
                 "Neither 'fastembed' nor 'sentence-transformers' is installed. Please install one."
             )
 
-    def embed(self, texts: List[str]) -> List[List[float]]:
-        """Embed a list of texts."""
-        if self._model_type == "fastembed":
-            return [e.tolist() for e in self._model.embed(texts)]
-        else:
-            return self._model.encode(texts).tolist()
+    def embed(self, texts: List[str], batch_size: int = 32) -> List[List[float]]:
+        """Embed a list of texts in batches to save memory."""
+        import gc
+
+        results = []
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
+            if self._model_type == "fastembed":
+                batch_results = [e.tolist() for e in self._model.embed(batch)]
+            else:
+                batch_results = self._model.encode(batch).tolist()
+            results.extend(batch_results)
+
+            # Explicitly clear batch variables and collect garbage
+            del batch
+            del batch_results
+            gc.collect()
+
+        return results
 
     def get_dimension(self) -> int:
         """Get the embedding dimension."""

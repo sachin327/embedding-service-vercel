@@ -7,10 +7,14 @@ import asyncio
 import httpx
 import logging
 from contextlib import asynccontextmanager
+import gc
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Global lock to ensure only one embedding request is processed at a time
+processing_lock = asyncio.Lock()
 
 
 @asynccontextmanager
@@ -51,16 +55,26 @@ async def ping():
 @app.post("/embedding")
 async def get_embeddings(request: EmbeddingRequest):
     try:
-        # The embedding.embed method expects a list of strings and returns a list of list of floats
-        embd_srvice = get_embedding_service()
-        results = embd_srvice.embed(request.inputs)
+        # Acquire lock to ensure serial processing
+        async with processing_lock:
+            embd_srvice = get_embedding_service()
 
-        # Ensure results are serializable (list of lists)
-        if hasattr(results, "tolist"):
-            results = results.tolist()
+            # Offload blocking call to thread to keep loop responsive for pings
+            loop = asyncio.get_running_loop()
+            results = await loop.run_in_executor(
+                None, embd_srvice.embed, request.inputs
+            )
 
-        return results
+            # Ensure results are serializable (list of lists)
+            if hasattr(results, "tolist"):
+                results = results.tolist()
+
+            # Force GC after efficient batch processing
+            gc.collect()
+
+            return results
     except Exception as e:
+        logger.error(f"Error processing embedding: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
